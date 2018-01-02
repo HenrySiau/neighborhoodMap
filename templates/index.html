@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Coolest Places in San Francisco</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css' ) }}">
+
+</head>
+<body>
+<div class="" id="container">
+    <aside data-bind="css: {sidebar: mapSize() < 0, sidebarShow: mapSize() == 0, sidebarHide: mapSize() > 0 }">
+
+        <h3>Coolest places in San Francisco</h3>
+        <div>
+            <select name="places" id="dropdown"
+                    data-bind="options: catalogs, optionsText: $data, optionsValue: $data, value: selectedChoice, optionsCaption: 'Choose a catagory'">
+            </select>
+            <button id="filterButton" data-bind="click: filter">Filter</button>
+        </div>
+
+        <h4 data-bind="text: message"></h4>
+        <hr>
+        <ul data-bind="foreach: locations()," class="locationList">
+            <li data-bind="text: title, event: {mouseover: function(data, event){showMarkerInfo(placeID, data, event)}, mouseout: function(data, event){hideMarkerInfo(placeID, data, event)}, click: function(data, event){focusPlace(placeID, location, data, event)} }, visible: showItem"
+                class="location"></li>
+            <p class="description" data-bind="attr:{id: placeID}, text: description, visible: showDescription, event: {mouseover: function(data, event){showMarkerInfo(placeID, data, event)}, mouseout: function(data, event){hideMarkerInfo(placeID, data, event)}, click: function(data, event){focusPlace(placeID, location, data, event)} }"></p>
+        </ul>
+    </aside>
+    <main class="" id="main">
+        <div data-bind="css: {navi: mapSize() < 0, naviRight: mapSize() == 0, naviLeft: mapSize() > 0 }" id="navi">
+            <img src="{{ url_for('static', filename='menuicon.png') }}" alt="menu" id="menuicon"
+                 data-bind="click: toggleMenu">
+        </div>
+        <div data-bind="css: {map: mapSize() < 0, mapRight: mapSize() == 0, mapLeft: mapSize() > 0 }" id="map"></div>
+    </main>
+
+</div>
+<script src="{{ url_for('static', filename='knockout-3.4.2.js') }}"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+{# ********* #}
+{#*** replace YOURKEY with your gooape map api key ***#}
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=YOURGOOGLEAPIKEY&v=3&callback=initMap"
+        onerror="googleError()"></script></body>
+
+</html>

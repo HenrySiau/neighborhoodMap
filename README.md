@@ -2,6 +2,7 @@
 Neighborhood Map App is an single-page application that showcase my favourite places at my neighborhood. all the data is fetched from server asynchronously.
 
 ## Installation
+This app require python version 3.6<br>
 $ pip install -r requirements.txt<br>
 replace your Google map api with YOURGOOGLEAPIKEY key at the button of index.html <br>
 replace your Google map api with YOURYELPAPIKEY key at the top of neighborhood.py <br>

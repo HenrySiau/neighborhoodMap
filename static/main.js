@@ -65,8 +65,9 @@ function NeighborhoodMapViewModel() {
     this.filter = function () {
         // show only the selected markers
         if (viewModel.selectedChoice()) {
+            if(viewModel.currentPlace){
             viewModel.currentPlace().showDescription(false);
-            viewModel.currentPlace = null;
+            viewModel.currentPlace = null;}
             for (var item in markersDictionary) {
                 if (markersDictionary[item].catalog == viewModel.selectedChoice()) {
                     markersDictionary[item].setMap(map);

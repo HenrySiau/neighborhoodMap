@@ -212,15 +212,25 @@ function makeMarkerIcon(markerColor) {
 // show info window of a specific marker and also high light this marker
 function showMarkerInfo(placeID) {
     if (viewModel.currentPlace == null) {
-        markersDictionary[placeID].setIcon(highlightedIcon);
-        populateInfoWindow(markersDictionary[placeID], largeInfowindow)
+        if (markersDictionary[placeID]) {
+            markersDictionary[placeID].setIcon(highlightedIcon);
+            populateInfoWindow(markersDictionary[placeID], largeInfowindow)
+        } else {
+            console.log('Please waite for Markers to be loaded.');
+            viewModel.message('Please waite for Markers to be loaded.');
+        }
     }
 }
 
 // change a specific marker icon to default
 function hideMarkerInfo(placeID) {
     if (viewModel.currentPlace == null) {
-        markersDictionary[placeID].setIcon(defaultIcon);
+        if (viewModel.currentPlace == null) {
+            markersDictionary[placeID].setIcon(defaultIcon);
+        } else {
+            console.log('Please waite for Markers to be loaded.');
+            viewModel.message('Please waite for Markers to be loaded.');
+        }
     }
 }
 
@@ -257,23 +267,29 @@ function populateInfoWindow(marker, infowindow) {
 // center the map to this selected marker, high light the marker, show info window,
 // at the side bar also show description of this place
 function focusPlace(placeID, location) {
-    map.setCenter(location);
-    markersDictionary[placeID].setIcon(highlightedIcon);
-    populateInfoWindow(markersDictionary[placeID], largeInfowindow);
-    for (var i = 0; i < viewModel.locations().length; i++) {
-        if (viewModel.locations()[i].placeID == placeID) {
-            var newCurrentPlace = ko.observable(viewModel.locations()[i]);
-            newCurrentPlace().showDescription(true);
-            // if current place is exist and different
-            if (viewModel.currentPlace && viewModel.currentPlace != newCurrentPlace) {
-                markersDictionary[viewModel.currentPlace().placeID].setIcon(defaultIcon);
-                viewModel.currentPlace().showDescription(false);
-                viewModel.currentPlace = newCurrentPlace;
-            } else {
-                viewModel.currentPlace = newCurrentPlace;
+
+    if (markersDictionary[placeID]) {
+        map.setCenter(location);
+        markersDictionary[placeID].setIcon(highlightedIcon);
+        populateInfoWindow(markersDictionary[placeID], largeInfowindow);
+        for (var i = 0; i < viewModel.locations().length; i++) {
+            if (viewModel.locations()[i].placeID == placeID) {
+                var newCurrentPlace = ko.observable(viewModel.locations()[i]);
+                newCurrentPlace().showDescription(true);
+                // if current place is exist and different
+                if (viewModel.currentPlace && viewModel.currentPlace != newCurrentPlace) {
+                    markersDictionary[viewModel.currentPlace().placeID].setIcon(defaultIcon);
+                    viewModel.currentPlace().showDescription(false);
+                    viewModel.currentPlace = newCurrentPlace;
+                } else {
+                    viewModel.currentPlace = newCurrentPlace;
+                }
+                break;
             }
-            break;
         }
+    } else {
+        console.log('Please waite for Markers to be loaded.');
+        viewModel.message('Please waite for Markers to be loaded.');
     }
 }
 

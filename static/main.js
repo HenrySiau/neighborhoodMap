@@ -234,7 +234,7 @@ function showMarkerInfo(placeID) {
 // change a specific marker icon to default
 function hideMarkerInfo(placeID) {
     if (viewModel.currentPlace == null) {
-        if (viewModel.currentPlace == null) {
+        if (markersDictionary[placeID]) {
             markersDictionary[placeID].setIcon(defaultIcon);
         } else {
             console.log('Please waite for Markers to be loaded.');

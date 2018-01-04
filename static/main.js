@@ -1,9 +1,6 @@
 // this variable indicate if the locations had been loaded
-var locationsLoaded = false;
-
 function NeighborhoodMapViewModel() {
     var self = this;
-    // this.data;
     this.catalogs = ko.observableArray();  // catalogs store options for the drop down menu
     // default value is less than 0, when sidebar shows the value is equal to 0, >0 when sidebar hides
     this.mapSize = ko.observable(-5);
@@ -13,25 +10,6 @@ function NeighborhoodMapViewModel() {
     this.SIDEBAR_BREAK_POINT = 600;// if the viewport is less than 600px wide, side bar will hide automatically
     this.locations = ko.observableArray();// this will contain all the current locations that shows on the map
     this.currentPlace = null;// indicate the most recent clicked place
-
-    $.getJSON('/places2/json', function (data) {
-        // showDescription will toggle show and hide descriptions
-
-        // viewModel.data = data;
-        for (var key in data) {
-            viewModel.catalogs.push(key);
-            data[key].forEach(function (value) {
-                value['showDescription'] = ko.observable(false);
-                value['showItem'] = ko.observable(true);
-                value['catalog'] = key;
-                viewModel.locations.push(value)
-            });
-        }
-    })
-        .fail(function () { // show message if can not fetch data
-            console.log('Something went wrong, can not fetch the data from server');
-            viewModel.message('can not fetch the data from server');
-        });
 
     // toggle sidebar display
     // we will rearrange components by changing their CSS classes
@@ -63,20 +41,29 @@ function NeighborhoodMapViewModel() {
 
     // filter function will update new data set
     this.filter = function () {
+        var choice = viewModel.selectedChoice();
+        bounds = new google.maps.LatLngBounds();
+        if(largeInfowindow){
+            largeInfowindow.close();
+        }
         // show only the selected markers
-        if (viewModel.selectedChoice()) {
+        if (choice) {
             if (viewModel.currentPlace) {
                 viewModel.currentPlace().showDescription(false);
+
                 viewModel.currentPlace = null;
             }
             if (markersDictionary) {
                 for (var item in markersDictionary) {
-                    if (markersDictionary[item].catalog == viewModel.selectedChoice()) {
+                    if (markersDictionary[item].catalog == choice || choice == 'Default')
+                    {
                         markersDictionary[item].setVisible(true);
+                        bounds.extend(markersDictionary[item].position);
                     } else {
                         markersDictionary[item].setVisible(false);
                     } // end else
                 } // end for
+                map.fitBounds(bounds);
                 //show only selected items
             } //end if(markersDictionary)
             else {
@@ -84,14 +71,14 @@ function NeighborhoodMapViewModel() {
                 viewModel.message('Please waite for Markers to be loaded.');
             } // end else
             viewModel.locations().forEach(function (value) {
-                    if (value['catalog'] == viewModel.selectedChoice()) {
+                    if (value['catalog'] == choice || choice == 'Default') {
                         value['showItem'](true);
                     } else {
                         value['showItem'](false);
                     } // end else
                 } // end if
             ); // end forEach
-        } // end  if (viewModel.selectedChoice())
+        } // end  if (viewModel.choice())
     } // end if(viewModel.currentPlace)
 } // end filter function
 
@@ -106,34 +93,39 @@ var bounds; //bounds of the markers
 
 // when google map api JS library is loaded will call this function
 function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: 37.7749, lng: -122.4194},
-        zoom: 13,
-        mapTypeControl: false
-    });
-    defaultIcon = makeMarkerIcon('0091ff');
-    highlightedIcon = makeMarkerIcon('FFFF24');
-    // if location has not been loaded, which means google map library is loaded after NeighborhoodMapViewModel
-    if (!locationsLoaded) {
+    $.getJSON('/places/json', function (data) {
+        // showDescription will toggle show and hide descriptions
+        // viewModel.data = data;
+        for (var key in data) {
+            viewModel.catalogs.push(key);
+            data[key].forEach(function (value) {
+                value['showDescription'] = ko.observable(false);
+                value['showItem'] = ko.observable(true);
+                value['catalog'] = key;
+                viewModel.locations.push(value)
+            });
+        }
+        viewModel.catalogs.push('Default');
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 37.7749, lng: -122.4194},
+            zoom: 13,
+            mapTypeControl: false
+        });
+        defaultIcon = makeMarkerIcon('0091ff');
+        highlightedIcon = makeMarkerIcon('FFFF24');
         if (viewModel.locations().length > 0) {
             // update markers at this step because
             // NeighborhoodMapViewModel can not update markers before google map library is ready
             updateMarkers(viewModel.locations());
             showMarkers();// show markers on the map
         }
-    }
 
-    // I did not use this event listener because it has a bug,
-    // when the window was resize, there is a narrow grey space at the right side of the map
-    // google.maps.event.addDomListener(window, 'resize', function () {
-    //     google.maps.event.trigger(map, 'resize');
-    //     if (bounds) {
-    //         map.fitBounds(bounds);
-    //
-    //     } else {
-    //         map.setCenter(map.getCenter());
-    //     }
-    // });
+    })
+        .fail(function () { // show message if can not fetch data
+            console.log('Something went wrong, can not fetch the data from server');
+            viewModel.message('can not fetch the data from server');
+        });
 }
 
 // create markers and one LargeInfowindow

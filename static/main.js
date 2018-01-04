@@ -3,7 +3,7 @@ var locationsLoaded = false;
 
 function NeighborhoodMapViewModel() {
     var self = this;
-    this.data;
+    // this.data;
     this.catalogs = ko.observableArray();  // catalogs store options for the drop down menu
     // default value is less than 0, when sidebar shows the value is equal to 0, >0 when sidebar hides
     this.mapSize = ko.observable(-5);
@@ -17,7 +17,7 @@ function NeighborhoodMapViewModel() {
     $.getJSON('/places2/json', function (data) {
         // showDescription will toggle show and hide descriptions
 
-        viewModel.data = data;
+        // viewModel.data = data;
         for (var key in data) {
             viewModel.catalogs.push(key);
             data[key].forEach(function (value) {
@@ -65,27 +65,35 @@ function NeighborhoodMapViewModel() {
     this.filter = function () {
         // show only the selected markers
         if (viewModel.selectedChoice()) {
-            if(viewModel.currentPlace){
-            viewModel.currentPlace().showDescription(false);
-            viewModel.currentPlace = null;}
-            for (var item in markersDictionary) {
-                if (markersDictionary[item].catalog == viewModel.selectedChoice()) {
-                    markersDictionary[item].setMap(map);
-                } else {
-                    markersDictionary[item].setMap(null);
-                }
+            if (viewModel.currentPlace) {
+                viewModel.currentPlace().showDescription(false);
+                viewModel.currentPlace = null;
             }
-            //show only selected items
+            if (markersDictionary) {
+                for (var item in markersDictionary) {
+                    if (markersDictionary[item].catalog == viewModel.selectedChoice()) {
+                        markersDictionary[item].setVisible(true);
+                    } else {
+                        markersDictionary[item].setVisible(false);
+                    } // end else
+                } // end for
+                //show only selected items
+            } //end if(markersDictionary)
+            else {
+                console.log('Please waite for Markers to be loaded.');
+                viewModel.message('Please waite for Markers to be loaded.');
+            } // end else
             viewModel.locations().forEach(function (value) {
-                if (value['catalog'] == viewModel.selectedChoice()) {
-                    value['showItem'](true);
-                } else {
-                    value['showItem'](false);
-                }
-            });
-        }
-    }
-}
+                    if (value['catalog'] == viewModel.selectedChoice()) {
+                        value['showItem'](true);
+                    } else {
+                        value['showItem'](false);
+                    } // end else
+                } // end if
+            ); // end forEach
+        } // end  if (viewModel.selectedChoice())
+    } // end if(viewModel.currentPlace)
+} // end filter function
 
 // below is google map JavaScript
 
@@ -254,23 +262,23 @@ function populateInfoWindow(marker, infowindow) {
                 infowindow.marker = null;
             });
             viewModel.message('');
-        })
+        }) // end $.getJSON
             .fail(function () {
                 console.log('Something went wrong, can not fetch the data from Yelp.');
                 viewModel.message('can not fetch the data from Yelp');
                 var content = '<div><h4>' + marker.title + '</h4></div>';
                 infowindow.setContent(content);
                 infowindow.open(map, marker);
-            });
-    }
-}
+            }); // end fail()
+    } // end if (infowindow.marker != marker)
+} // end function populateIfoWindow
 
 // center the map to this selected marker, high light the marker, show info window,
 // at the side bar also show description of this place
 function focusPlace(placeID, location) {
 
     if (markersDictionary[placeID]) {
-        map.setCenter(location);
+        map.panTo(location);
         markersDictionary[placeID].setIcon(highlightedIcon);
         populateInfoWindow(markersDictionary[placeID], largeInfowindow);
         for (var i = 0; i < viewModel.locations().length; i++) {
@@ -286,13 +294,14 @@ function focusPlace(placeID, location) {
                     viewModel.currentPlace = newCurrentPlace;
                 }
                 break;
-            }
-        }
+            } // end if viewModel.locations()[i].placeID == placeID)
+        } // end for
     } else {
         console.log('Please waite for Markers to be loaded.');
         viewModel.message('Please waite for Markers to be loaded.');
     }
-}
+
+} // end function focusPlace
 
 function googleError() {
     console.log('Something went wrong, can not load google map');

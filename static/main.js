@@ -286,10 +286,12 @@ function focusPlace(placeID, location) {
                 var newCurrentPlace = ko.observable(viewModel.locations()[i]);
                 newCurrentPlace().showDescription(true);
                 // if current place is exist and different
-                if (viewModel.currentPlace && viewModel.currentPlace != newCurrentPlace) {
-                    markersDictionary[viewModel.currentPlace().placeID].setIcon(defaultIcon);
-                    viewModel.currentPlace().showDescription(false);
-                    viewModel.currentPlace = newCurrentPlace;
+                if (viewModel.currentPlace) {
+                    if (viewModel.currentPlace() != newCurrentPlace()) {
+                        markersDictionary[viewModel.currentPlace().placeID].setIcon(defaultIcon);
+                        viewModel.currentPlace().showDescription(false);
+                        viewModel.currentPlace = newCurrentPlace;
+                    }
                 } else {
                     viewModel.currentPlace = newCurrentPlace;
                 }
